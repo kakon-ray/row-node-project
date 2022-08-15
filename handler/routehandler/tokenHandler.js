@@ -162,4 +162,22 @@ handler._token.delete = (requesPropartice, callback) => {
   }
 };
 
+handler._token.varify = (id, mobileNumber, callback) => {
+  data.read("token", id, (err, tokenData) => {
+    const parseTokenData = parceJSON(tokenData);
+    if (!err && tokenData) {
+      if (
+        parseTokenData.mobileNumber === mobileNumber &&
+        parseTokenData.expires > Date.now()
+      ) {
+        callback(true);
+      } else {
+        callback(false);
+      }
+    } else {
+      callback(false);
+    }
+  });
+};
+
 module.exports = handler;

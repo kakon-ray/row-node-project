@@ -1,6 +1,7 @@
 const data = require("../../lib/data");
 const { hash, parceJSON } = require("../../helpers/utilities");
-
+const tokenHandler = require("./tokenHandler");
+const { user } = require("../../routes");
 const handler = {};
 
 handler.userHandler = (requesPropartice, callback) => {
@@ -77,17 +78,29 @@ handler._user.get = (requesPropartice, callback) => {
   console.log(mobileNumber);
 
   if (mobileNumber) {
-    // find the user
+    // varify token
+    const token =
+      typeof requesPropartice.headerObject.token === "string"
+        ? requesPropartice.headerObject.token
+        : false;
 
-    data.read("users", mobileNumber, (err, u) => {
-      const user = { ...parceJSON(u) };
-      console.log(u);
-      if (!err && user) {
-        delete user.password;
-        callback(200, user);
+    tokenHandler._token.varify(token, mobileNumber, (tokenID) => {
+      if (tokenID) {
+        data.read("users", mobileNumber, (err, u) => {
+          const user = { ...parceJSON(u) };
+          console.log(u);
+          if (!err && user) {
+            delete user.password;
+            callback(200, user);
+          } else {
+            callback(404, {
+              error: "request user was not found",
+            });
+          }
+        });
       } else {
-        callback(404, {
-          error: "request user was not found",
+        callback(403, {
+          error: "Authnticated Faild",
         });
       }
     });
@@ -124,32 +137,46 @@ handler._user.put = (requesPropartice, callback) => {
 
   if (mobileNumber) {
     if (firstName || lastName || passowrd) {
-      data.read("users", mobileNumber, (err, u) => {
-        const userData = { ...parceJSON(u) };
-        if (!err && userData) {
-          if (firstName) {
-            userData.firstName = firstName;
-          }
-          if (lastName) {
-            userData.lastName = lastName;
-          }
-          if (mobileNumber) {
-            userData.mobileNumber = mobileNumber;
-          }
-          if (passowrd) {
-            userData.passowrd = passowrd;
-          }
+      // varify token
+      const token =
+        typeof requesPropartice.headerObject.token === "string"
+          ? requesPropartice.headerObject.token
+          : false;
 
-          data.update("users", mobileNumber, userData, (err2) => {
-            if (!err2) {
-              callback(200, { message: "User Update Success" });
+      tokenHandler._token.varify(token, mobileNumber, (tokenID) => {
+        if (tokenID) {
+          data.read("users", mobileNumber, (err, u) => {
+            const userData = { ...parceJSON(u) };
+            if (!err && userData) {
+              if (firstName) {
+                userData.firstName = firstName;
+              }
+              if (lastName) {
+                userData.lastName = lastName;
+              }
+              if (mobileNumber) {
+                userData.mobileNumber = mobileNumber;
+              }
+              if (passowrd) {
+                userData.passowrd = passowrd;
+              }
+
+              data.update("users", mobileNumber, userData, (err2) => {
+                if (!err2) {
+                  callback(200, { message: "User Update Success" });
+                } else {
+                  callback(400, { error: "Thare was a problem" });
+                }
+              });
             } else {
-              callback(400, { error: "Thare was a problem" });
+              callback(404, {
+                error: "request user was not found",
+              });
             }
           });
         } else {
-          callback(404, {
-            error: "request user was not found",
+          callback(403, {
+            error: "Authnticated Faild",
           });
         }
       });
@@ -158,6 +185,8 @@ handler._user.put = (requesPropartice, callback) => {
         error: "Invalid Phone Number",
       });
     }
+
+    // varify token end
   } else {
     callback(400, {
       error: "Invalid Phone Number",
@@ -173,19 +202,35 @@ handler._user.delete = (requesPropartice, callback) => {
       : false;
 
   if (mobileNumber) {
-    data.read("users", mobileNumber, (err, userData) => {
-      if (!err) {
-        data.delete("users", mobileNumber, (err2) => {
-          if (!err2) {
-            callback(200, { message: "file was deleted" });
+    // varify token
+    const token =
+      typeof requesPropartice.headerObject.token === "string"
+        ? requesPropartice.headerObject.token
+        : false;
+
+    tokenHandler._token.varify(token, mobileNumber, (tokenID) => {
+      if (tokenID) {
+        data.read("users", mobileNumber, (err, userData) => {
+          if (!err) {
+            data.delete("users", mobileNumber, (err2) => {
+              if (!err2) {
+                callback(200, { message: "file was deleted" });
+              } else {
+                callback(400, { error: "File was not delete" });
+              }
+            });
           } else {
-            callback(400, { error: "File was not delete" });
+            callback(400, { error: "Thare was a problem serverside" });
           }
         });
       } else {
-        callback(400, { error: "Thare was a problem serverside" });
+        callback(403, {
+          error: "Authnticated Faild",
+        });
       }
     });
+
+    // varification token end
   } else {
     callback(400, { error: "Thare was a problem" });
   }
