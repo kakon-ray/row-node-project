@@ -33,10 +33,20 @@ utilities.hash = (str) => {
 utilities.convertToRandomStringToken = (strLength) => {
   let length = strLength;
 
-  length = typeof strLength === "number" && length > 0 ? strLength : false;
+  length = typeof strLength === "number" && length > 0 ? length : false;
 
   if (length) {
-    return Math.random().toString(strLength).substr(2);
+    //edit the token allowed characters
+    var a =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split(
+        ""
+      );
+    var b = [];
+    for (var i = 0; i < length; i++) {
+      var j = (Math.random() * (a.length - 1)).toFixed(0);
+      b[i] = a[j];
+    }
+    return b.join("");
   } else {
     return false;
   }
