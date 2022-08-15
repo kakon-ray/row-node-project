@@ -134,6 +134,32 @@ handler._token.put = (requesPropartice, callback) => {
   }
 };
 
-handler._token.delete = (requesPropartice, callback) => {};
+handler._token.delete = (requesPropartice, callback) => {
+  const id =
+    typeof requesPropartice.queryStringObject.tokenId === "string" &&
+    requesPropartice.queryStringObject.tokenId.trim().length === 20
+      ? requesPropartice.queryStringObject.tokenId
+      : false;
+
+  console.log(requesPropartice.queryStringObject.tokenId);
+
+  if (id) {
+    data.read("token", id, (err, userData) => {
+      if (!err) {
+        data.delete("token", id, (err2) => {
+          if (!err2) {
+            callback(200, { message: "file was deleted" });
+          } else {
+            callback(400, { error: "File was not delete" });
+          }
+        });
+      } else {
+        callback(400, { error: "Thare was a problem serverside" });
+      }
+    });
+  } else {
+    callback(400, { error: "Thare was a problem" });
+  }
+};
 
 module.exports = handler;
