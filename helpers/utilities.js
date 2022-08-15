@@ -29,4 +29,17 @@ utilities.hash = (str) => {
   return false;
 };
 
+// token conventing
+utilities.convertToRandomStringToken = (strLength) => {
+  let length = strLength;
+
+  length = typeof strLength === "number" && length > 0 ? strLength : false;
+
+  if (length) {
+    return Math.random().toString(strLength).substr(2);
+  } else {
+    return false;
+  }
+};
+
 module.exports = utilities;
