@@ -180,9 +180,9 @@ handler._check.get = (requesPropartice, callback) => {
 
 handler._check.put = (requesPropartice, callback) => {
   const id =
-    typeof requesPropartice.queryStringObject.id === "string" &&
-    requesPropartice.queryStringObject.id.trim().length === 20
-      ? requesPropartice.queryStringObject.id
+    typeof requesPropartice.body.id === "string" &&
+    requesPropartice.body.id.trim().length === 20
+      ? requesPropartice.body.id
       : false;
 
   if (id) {
