@@ -139,7 +139,44 @@ handler._check.post = (requesPropartice, callback) => {
   }
 };
 
-handler._check.get = (requesPropartice, callback) => {};
+handler._check.get = (requesPropartice, callback) => {
+  const id =
+    typeof requesPropartice.queryStringObject.id === "string" &&
+    requesPropartice.queryStringObject.id.trim().length === 20
+      ? requesPropartice.queryStringObject.id
+      : false;
+
+  if (id) {
+    data.read("checks", id, (error, checkData) => {
+      if (!error && checkData) {
+        const token =
+          typeof requesPropartice.headerObject.token === "string" &&
+          requesPropartice.headerObject.token.trim().length === 20
+            ? requesPropartice.headerObject.token
+            : false;
+
+        const userMobileNumber = parceJSON(checkData).mobileNumber;
+        tokenHandler._token.varify(token, userMobileNumber, (tokenIsValid) => {
+          if (tokenIsValid) {
+            callback(200, parceJSON(checkData));
+          } else {
+            callback(500, {
+              error: "Authentication Faild",
+            });
+          }
+        });
+      } else {
+        callback(500, {
+          error: "Can not find data",
+        });
+      }
+    });
+  } else {
+    callback(500, {
+      error: "Thare was a problem in a Request",
+    });
+  }
+};
 
 handler._check.put = (requesPropartice, callback) => {};
 
