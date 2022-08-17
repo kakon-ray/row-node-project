@@ -230,6 +230,67 @@ handler._check.put = (requesPropartice, callback) => {
   }
 };
 
-handler._check.delete = (requesPropartice, callback) => {};
+handler._check.delete = (requesPropartice, callback) => {
+  const id =
+    typeof requesPropartice.queryStringObject.id === "string" &&
+    requesPropartice.queryStringObject.id.trim().length === 20
+      ? requesPropartice.queryStringObject.id
+      : false;
+
+  if (id) {
+    data.read("checks", id, (err, checkData) => {
+      if (!err && checkData) {
+        const token =
+          typeof requesPropartice.headerObject.token === "string" &&
+          requesPropartice.headerObject.token.trim().length === 20
+            ? requesPropartice.headerObject.token
+            : false;
+
+        const userMobileNumber = parceJSON(checkData).mobileNumber;
+
+        tokenHandler._token.varify(token, userMobileNumber, (tokenIsValid) => {
+          if (tokenIsValid) {
+            data.delete("checks", id, (err2) => {
+              if (!err2) {
+                // callback(200, { message: "Update successfully Completed" });
+
+                data.read("users", userMobileNumber, (err3, userData) => {
+                  if (!err3 && userData) {
+                    let userDataToObject = parceJSON(userData);
+                    let userChecks = userDataToObject.checks;
+                    userChecks = userChecks.filter((item) => item !== id);
+                    userDataToObject.checks = userChecks;
+                    data.update(
+                      "users",
+                      userMobileNumber,
+                      userDataToObject,
+                      (err4) => {
+                        if (!err4) {
+                          callback(500, { message: "All update successfully" });
+                        } else {
+                          callback(500, {
+                            error: "User data not found Problem",
+                          });
+                        }
+                      }
+                    );
+                  } else {
+                    callback(500, { error: "User data not found Problem" });
+                  }
+                });
+              } else {
+                callback(500, { error: "Update Problem" });
+              }
+            });
+          }
+        });
+      } else {
+        callback(500, { error: "Thare was a problem in red check" });
+      }
+    });
+  } else {
+    callback(400, { error: "No query parameter found" });
+  }
+};
 
 module.exports = handler;
