@@ -178,7 +178,57 @@ handler._check.get = (requesPropartice, callback) => {
   }
 };
 
-handler._check.put = (requesPropartice, callback) => {};
+handler._check.put = (requesPropartice, callback) => {
+  const id =
+    typeof requesPropartice.queryStringObject.id === "string" &&
+    requesPropartice.queryStringObject.id.trim().length === 20
+      ? requesPropartice.queryStringObject.id
+      : false;
+
+  if (id) {
+    data.read("checks", id, (err, checkData) => {
+      if (!err && checkData) {
+        const token =
+          typeof requesPropartice.headerObject.token === "string" &&
+          requesPropartice.headerObject.token.trim().length === 20
+            ? requesPropartice.headerObject.token
+            : false;
+
+        const checkDataToObejct = parceJSON(checkData);
+
+        const userMobileNumber = checkDataToObejct.mobileNumber;
+        tokenHandler._token.varify(token, userMobileNumber, (tokenIsValid) => {
+          if (tokenIsValid) {
+            if (requesPropartice.body.protocol) {
+              checkDataToObejct.protocol = requesPropartice.body.protocol;
+            }
+            if (requesPropartice.body.url) {
+              checkDataToObejct.url = requesPropartice.body.url;
+            }
+            if (requesPropartice.body.method) {
+              checkDataToObejct.method = requesPropartice.body.method;
+            }
+            if (requesPropartice.body.successcode) {
+              checkDataToObejct.successcode = requesPropartice.body.successcode;
+            }
+            if (requesPropartice.body.timeoutSecond) {
+              checkDataToObejct.timeoutSecond =
+                requesPropartice.body.timeoutSecond;
+            }
+
+            data.update("checks", id, checkDataToObejct, (err2) => {
+              if (!err2) {
+                callback(200, { message: "Token is successfully update" });
+              } else {
+                callback(400, { error: "Thare was a problem" });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+};
 
 handler._check.delete = (requesPropartice, callback) => {};
 
