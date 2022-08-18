@@ -1,24 +1,13 @@
-const http = require("http");
-const { StringDecoder } = require("string_decoder");
-const url = require("url");
-const { handleRequestRes } = require("./helpers/handleReqRes");
-const data = require("./lib/data");
-const { sendTwilioSms } = require("./helpers/notifications");
+const server = require("./lib/server");
+const workers = require("./lib/worker");
 
 const app = {};
 
-app.config = {
-  port: 5000,
+app.init = () => {
+  server.init();
+  workers.init();
 };
 
-app.creatServer = () => {
-  const server = http.createServer(app.handleRequest);
+app.init();
 
-  server.listen(app.config.port, () => {
-    console.log(`Lisining to port ${app.config.port}`);
-  });
-};
-
-app.handleRequest = handleRequestRes;
-
-app.creatServer();
+module.exports = app;

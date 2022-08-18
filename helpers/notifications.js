@@ -57,7 +57,14 @@ notifications.sendTwilioSms = (phone, msg, callback) => {
       const status = res.statusCode;
 
       // callback successfully if the request went through
-      if (status === 200 || status === 201) {
+
+      if (
+        status === 200 ||
+        status === 201 ||
+        status === 301 ||
+        status === 500 ||
+        status === 501
+      ) {
         callback(false);
       } else {
         callback(`Status code returned was ${status}`);
